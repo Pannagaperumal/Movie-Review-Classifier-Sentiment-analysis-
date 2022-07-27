@@ -145,14 +145,14 @@ import numpy as np
 examples = [
     "the movie was great",
     "the movie was somewhat ok",
-    "movie was completly boring"
+    "the movie was terrible"
 ]
 q=input("enter a review: \n")
 examples.append(q)
 p=final_model.predict(examples)
 print(p[-1])
 if p[-1]<=0.5:
-    print("This is negative response!!")
+    print("This review is quite negative!!")
 else:
-    print("this was a positive response!!")    
+    print("this review is quite possitive!!")    
     
