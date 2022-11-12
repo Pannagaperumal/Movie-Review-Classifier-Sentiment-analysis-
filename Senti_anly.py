@@ -1,3 +1,5 @@
+#importing modules
+
 import matplotlib.pyplot as plt
 import os
 import re
@@ -7,6 +9,10 @@ import tensorflow as tf
 from tensorflow.keras import layers
 from tensorflow.keras import losses
 print(tf.__version__)
+
+#downloading the data for the project
+#here we have used a dataset from Stanford University 
+
 
 url = "https://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz"
 dataset = tf.keras.utils.get_file("aclImdb_v1",url,untar=True,cache_dir='.',cache_subdir='')
@@ -25,6 +31,7 @@ raw_train_ds = tf.keras.utils.text_dataset_from_directory(
     'aclImdb/train',batch_size=batch_size,validation_split = 0.2,subset='training',seed=seed
 )
 
+#pre processing the data
 '''
 for text_batch, label_batch in raw_train_ds.take(1):
     for i in range(3):
@@ -40,6 +47,11 @@ raw_val_ds = tf.keras.utils.text_dataset_from_directory(
 raw_test_ds=tf.keras.utils.text_dataset_from_directory('aclImdb/test',
 batch_size=batch_size)
 
+#function for standardising the input_data
+
+#this function converts evry review to lower case
+#and replaces html tags with ','
+
 def custom_standardisation(input_data):
     lowercase=tf.strings.lower(input_data)
     stripped_html= tf.strings.regex_replace(lowercase,'<br />',' ')
@@ -48,11 +60,15 @@ def custom_standardisation(input_data):
 
 max_features = 10000
 sequence_length=250
+
+#creating a layer that applies custom standardization
 vectorize_layer=layers.TextVectorization(
     standardize=custom_standardisation, max_tokens=max_features,
     output_mode='int',
     output_sequence_length=sequence_length
 )
+
+#preparing training data
 
 train_text= raw_train_ds.map(lambda x,y:x)
 vectorize_layer.adapt(train_text)
@@ -79,6 +95,7 @@ train_ds=train_ds.cache().prefetch(buffer_size=AUTOTUNE)
 val_ds=val_ds.cache().prefetch(buffer_size=AUTOTUNE)
 test_ds = test_ds.cache().prefetch(buffer_size=AUTOTUNE)
 
+#building the model with custom layer
 embedding= 16
 model = tf.keras.Sequential([
    #vectorize_layer,
@@ -96,6 +113,10 @@ model.compile(
 loss=losses.BinaryCrossentropy(from_logits=True),
 metrics=['BinaryAccuracy'])
 epochs=10
+
+#training the model with binary accuracy as a metric
+#validating the model with validation data each epoch
+
 history= model.fit(
     train_ds,
     validation_data=val_ds,
@@ -116,6 +137,10 @@ final_model = tf.keras.Sequential([
     layers.Activation('sigmoid')
 ])
 final_model.compile(loss=losses.BinaryCrossentropy(from_logits=False),optimizer='adam',metrics=['accuracy'])
+
+#visualising results with graphs
+#uncomment below code to see the learning graphs 
+
 ''''optional Learning Graphs
 history_dict=history.history
 history_dict.keys()
@@ -140,7 +165,12 @@ plt.xlabel('Epochs')
 plt.ylabel('Accuracy')
 plt.show()
 '''
-####USSER INTERFACE######3###################
+
+#testing and predicting on real time reviews
+#the review that is entered by the user will be analysed
+#and label would be predicted.
+
+####USER INTERFACE##
 import numpy as np
 examples = [
     "the movie was great",
